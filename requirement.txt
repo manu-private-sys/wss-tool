@@ -1,4 +1,4 @@
-pip3 install pexpect
-pip3 install pandas
-pip3 install paramiko
-pip3 install colorama
+pexpect
+pandas
+paramiko
+colorama
