@@ -1,0 +1,56 @@
+#!/usr/bin/expect
+
+# Start logging
+log_file /tmp/WSS-TOOL/LOGS/Automated-ProxySG-Login.log
+set USER [exec whoami]
+set DATE [exec date]
+send_user "\n"
+send_user "Script initiated by user : $USER on date : $DATE\r"
+send_user "\n\n"
+
+# Read in Site name
+stty -echo
+send_user -- "Enter the Site (ginmu1/gitmi11): "
+expect_user -re "(.*)\n"
+send_user "\n"
+stty echo
+set site $expect_out(1,string)
+
+# Read in Dp no
+stty -echo
+send_user -- "Enter the DP no (1/2/3): "
+expect_user -re "(.*)\n"
+send_user "\n"
+stty echo
+set dpno "dp"
+append dpno $expect_out(1,string)
+
+# Read in SG no
+stty -echo
+send_user -- "Enter the SG no (1/2/3): "
+expect_user -re "(.*)\n"
+send_user "\n"
+stty echo
+set sgno "sg"
+append sgno $expect_out(1,string)
+
+# Combine values to make proper Sitename
+stty -echo
+send_user -- "Entered Site is : "
+append site "-" $dpno "-" $sgno
+send_user "$site"
+send_user "\n"
+
+# Setting up password
+set base64_passwd YzEwdWRibHUz
+set password [exec echo $base64_passwd | base64 -d]
+set CorrectedPassword [ string map -nocase { "\$" "\\\$" } $password ]
+
+# Establish SSH Connection
+set my_host [exec /usr/bin/python3 /usr/share/gcpshell/gcpdb.py $site]
+send_user -- "\nEstablishing SSH Connection : "
+send_user "\n"
+spawn ssh -o Stricthostkeychecking=no -o ServerAliveInterval=40  $my_host
+expect "*?assword:*"
+send -- "$CorrectedPassword\r"
+interact
